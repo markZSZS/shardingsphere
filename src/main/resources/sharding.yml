@@ -1,0 +1,47 @@
+# 数据源配置（完全按照官方示例）
+dataSources:
+  ds_0:
+    dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+    driverClassName: com.mysql.cj.jdbc.Driver
+    jdbcUrl: jdbc:mysql://localhost:3307/app_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456
+  ds_1:
+    dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+    driverClassName: com.mysql.cj.jdbc.Driver
+    jdbcUrl: jdbc:mysql://localhost:3307/app_db2?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456
+
+
+# 分片规则配置（增加分库策略）
+rules:
+  - !SHARDING
+    tables:
+      user:
+        # 实际数据节点：两个库 × 两个表 = 4个节点
+        actualDataNodes: ds_${0..1}.user_${0..1}
+        # 分库策略
+        databaseStrategy:
+          standard:
+            shardingColumn: id
+            shardingAlgorithmName: db-inline
+        # 分表策略
+        tableStrategy:
+          standard:
+            shardingColumn: id
+            shardingAlgorithmName: table-inline
+    # 分片算法定义
+    shardingAlgorithms:
+      db-inline:
+        type: INLINE
+        props:
+          algorithm-expression: ds_${id % 2}
+      table-inline:
+        type: INLINE
+        props:
+          algorithm-expression: user_${id % 2}
+
+# 其他属性
+props:
+  sql-show: true

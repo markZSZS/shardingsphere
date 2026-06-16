@@ -1,3 +1,8 @@
+server:
+  port: 9090
+
 spring:
-  application:
-    name: shardingsphere
+  datasource:
+    driver-class-name: org.apache.shardingsphere.driver.ShardingSphereDriver # 指定了ShardingSphereDriver 为数据库驱动
+    url: jdbc:shardingsphere:classpath:sharding.yml # 指定classpath的sharding-datasource.yml文件
+
