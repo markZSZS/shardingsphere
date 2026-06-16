@@ -17,30 +17,44 @@ dataSources:
 # 分片规则配置（增加分库策略）
 rules:
   - !SHARDING
-    tables:
+    autoTables:
       user:
         # 实际数据节点：两个库 × 两个表 = 4个节点
-        actualDataNodes: ds_${0..1}.user_${0..1}
+#        actualDataNodes: ds_0.user_${2026..2080}  # 这里预告到2027年
+        actualDataNodes: ds_0
         # 分库策略
-        databaseStrategy:
-          standard:
-            shardingColumn: id
-            shardingAlgorithmName: db-inline
-        # 分表策略
+#        databaseStrategy:
+#          standard:
+#            #  ShardingSphere 解析 SQL，提取分片键 create_time 的值
+#            shardingColumn: create_time
+#            # 引用一个已经定义好的分片算法
+#            shardingAlgorithmName: user_interval
+#        # 分表策略
         tableStrategy:
           standard:
-            shardingColumn: id
-            shardingAlgorithmName: table-inline
+            shardingColumn: create_time
+            shardingAlgorithmName: user_interval
     # 分片算法定义
     shardingAlgorithms:
-      db-inline:
-        type: INLINE
+      user_interval:
+        type: INTERVAL
         props:
-          algorithm-expression: ds_${id % 2}
-      table-inline:
-        type: INLINE
-        props:
-          algorithm-expression: user_${id % 2}
+          datetime-pattern: "yyyy-MM-dd HH:mm:ss"  #  定义 shardingColumn 值的解析格式，必须与数据库中该字段的存储格式一致。
+          datetime-lower: "2023-01-01 00:00:00"  #	分片范围的起始时间（包含）。早于此时间的数据会被路由到第一个分片。
+          datetime-upper: "2028-01-01 00:00:00"  #  分片范围的结束时间（不包含）。晚于此时间的数据会被路由到最后一个分片。
+          sharding-suffix-pattern: "yyyy"  #   决定表名的后缀格式。yyyy 表示年份，如 user_2023；也可以用 yyyyMM（年月）、yyyyMMdd（年月日）等。
+          datetime-interval-amount: "1"  #	时间间隔的数值。与 datetime-interval-unit 共同决定分片的跨度。
+          datetime-interval-unit: "YEARS"  # 时间间隔单位，支持 YEARS、MONTHS、DAYS、HOURS、MINUTES、SECONDS、MILLISECONDS
+
+
+#      db-inline:
+#        type: INLINE
+#        props:
+#          algorithm-expression: ds_${id % 2}
+#      table-inline:
+#        type: INLINE
+#        props:
+#          algorithm-expression: user_${id % 2}
 
 # 其他属性
 props:
