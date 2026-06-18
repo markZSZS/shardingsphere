@@ -7,7 +7,7 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-@TableName("user")
+@TableName("user_2026")
 public class User {
 
     @TableId
